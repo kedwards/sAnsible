@@ -1,0 +1,20 @@
+Description: Test Cloudformation Template
+
+Parameters:
+  StackDate:
+    Type: String
+    Description: The date the template was generated
+
+Resources:
+  NullResource1:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+  NullResource2:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+Outputs:
+  TemplateDate:
+    Description: The date the template was generated
+    Value: !Ref StackDate
+    Export:
+      Name: !Sub "${AWS::StackName}-${StackDate}"

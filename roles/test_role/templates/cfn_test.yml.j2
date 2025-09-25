@@ -1,0 +1,23 @@
+Description: Test Cloudformation Template
+
+Parameters:
+  StackDate:
+    Type: String
+    Description: The date the template was generated
+
+Resources:
+{% for item in range(number_of_resources) %}
+{%- set resource_name = 'NullResource' ~ loop.index %}
+  {{ resource_name }}:
+    Type: AWS::CloudFormation::WaitConditionHandle
+{% if not loop.last %}
+
+{% endif %}
+{% endfor %}
+
+Outputs:
+  TemplateDate:
+    Description: The date the template was generated
+    Value: !Ref StackDate
+    Export:
+      Name: !Sub "${AWS::StackName}-${StackDate}"

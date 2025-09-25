@@ -1,0 +1,38 @@
+---
+# tasks file for test_role
+- name: Print a message
+  ansible.builtin.debug:
+    msg: 
+      - "User: {{ lookup('env', 'USER') }}"
+      - "Generated: {{ ansible_date_time.iso8601 }}"
+
+- name: Set template filename with date
+  set_fact:
+    stack_name: "{{ stack_name_prefix }}-resource"
+    template_filename: "cfn_test_generated_{{ ansible_date_time.date | regex_replace('-', '') }}.yml"
+
+- name: Generate CloudFormation template
+  ansible.builtin.template:
+    src: cfn_test.yml.j2
+    dest: "{{ role_path }}/files/{{ template_filename }}"
+
+- name: Create cloud resource(s)
+  amazon.aws.cloudformation:
+    stack_name: "{{ stack_name }}"
+    state: "{{ cfn_action }}"
+    region: "{{ aws_region }}"
+    template_body: "{{ lookup('file', '{{ template_filename }}') }}"
+    create_changeset: "{{ create_changeset }}"
+    template_parameters:
+      StackDate: "{{ ansible_date_time.date | regex_replace('-', '') }}"
+    capabilities:
+      - CAPABILITY_AUTO_EXPAND
+  when: cfn_deploy | default(false) and cfn_action == 'present'
+
+- name: Delete cloud resources
+  amazon.aws.cloudformation:
+    stack_name: "{{ stack_name }}"
+    state: absent
+    region: "{{ aws_region }}"
+  when: cfn_deploy | default(false) and cfn_action == 'absent'
+

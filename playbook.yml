@@ -1,0 +1,50 @@
+---
+- name: Test playbook
+  hosts: "{{ target|default('localhost') }}"
+  gather_facts: true
+  module_defaults:
+    group/aws:
+      profile: ''
+  vars:
+    aws_region: "{{ region | default('us-west-2') }}"
+    stack_name_prefix: "{{ stack_prefix | default('test') }}"
+    create_changeset: "{{ changeset | default(false) }}"
+    cfn_action: "{{ action | default('present') }}"
+  roles:
+    - test_role
+  pre_tasks:
+    - name: Pre task
+      ansible.builtin.debug:
+        msg: 
+          - "User: {{ lookup('env', 'USER') }}"
+          - "Pre tasks runs before role"
+          - "Generated: {{ ansible_date_time.iso8601 }}"
+  tasks:
+    - name: Task
+      ansible.builtin.debug:
+        msg: 
+          - "User: {{ lookup('env', 'USER') }}"
+          - "Task runs after role"
+          - "Generated: {{ ansible_date_time.iso8601 }}"
+
+  post_tasks:
+    - name: CloudFormation Stack Summary
+      ansible.builtin.debug:
+        msg:
+          - "=== CloudFormation Stack Summary ==="
+          - "Action: {{ 'Created/Updated' if cfn_action == 'present' else 'Deleted' }} {{ number_of_resources }} resources in stack {{ stack_name }}"
+          - "Region: {{ aws_region }}"
+          - "Stack Name: {{ stack_name }}"
+          - "Number of Resources: {{ number_of_resources }}"
+          - "Changeset Mode: {{ 'Enabled' if create_changeset else 'Disabled' }}"
+          - "Execution Time: {{ ansible_date_time.iso8601 }}"
+      when: cfn_deploy | default(false)
+
+    - name: No Action Summary
+      ansible.builtin.debug:
+        msg:
+          - "=== Summary ==="
+          - "No CloudFormation actions were performed (cfn_deploy was not set to true)"
+          - "To deploy/delete stack, run with: -e 'cfn_deploy=true'"
+          - "To delete stack, add: -e 'action=absent'"
+      when: not (cfn_deploy | default(false))

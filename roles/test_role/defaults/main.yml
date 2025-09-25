@@ -1,0 +1,20 @@
+---
+# The region to deploy into
+aws_region: us-west-2
+
+# The prefix for the stack name
+stack_prefix: test
+
+# Create a preview of how the stack will be
+# configured before starting a stack update
+create_changeset: false
+
+# The cloudformation acion to be taken
+# Options: 
+#   present - create or update
+#   absent - delete
+cfn_action: present
+
+# number of resources to create
+# WARNING: common sense required ;-) 
+number_of_resources: 2
