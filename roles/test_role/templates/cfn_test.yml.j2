@@ -1,5 +1,7 @@
 Description: Test Cloudformation Template
 
+Transform: AWS::LanguageExtensions
+
 Parameters:
   StackDate:
     Type: String
@@ -14,6 +16,12 @@ Resources:
 
 {% endif %}
 {% endfor %}
+
+  'Fn::ForEach::Resources':
+    - ResourceStatus
+    - [Success, Failure, Timeout, Unknown]
+    - 'NullResource${ResourceStatus}':
+        Type: AWS::CloudFormation::WaitConditionHandle
 
 Outputs:
   TemplateDate:
